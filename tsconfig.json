@@ -1,0 +1,24 @@
+{
+	"compilerOptions": {
+		"target": "es5",
+		"module": "commonjs",
+		"moduleResolution": "node",
+		"allowUmdGlobalAccess": true,
+		"allowSyntheticDefaultImports": true,
+		"forceConsistentCasingInFileNames": true,
+		"esModuleInterop": true,
+		"declaration": true,
+		"pretty": true,
+		"rootDir": "./src",
+		"sourceMap": false,
+		"strict": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noImplicitReturns": true,
+		"noImplicitAny": false,
+		"noFallthroughCasesInSwitch": true,
+		"outDir": "lib",
+		"lib": ["dom", "dom.iterable", "esnext"]
+	},
+	"exclude": ["node_modules", "lib", "esm", "**/__tests__/**/*",]
+}
