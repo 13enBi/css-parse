@@ -1,109 +1,161 @@
-export type ParseResult = Record<string, Record<string, string>>;
+import { Matcher } from './match';
+import { DeclarationNode, RuleNode } from './nodeType';
+
+export interface Position {
+	offset: number;
+	line: number;
+	column: number;
+}
+
+export interface ParserContext extends Position {
+	options: any;
+	readonly originalSource: string;
+	source: string;
+}
+
+export enum ParseFlag {
+	DECLARATION = 'declaration',
+	COMMENT = 'comment',
+	RULES = 'rules',
+}
 
 export default class Parse {
-	constructor(public css: string) {}
+	ctx: ParserContext;
+	matcher: Matcher;
 
-	match(reg: RegExp) {
-		const res = this.css.match(reg)?.[0];
-
-		return res && ((this.css = this.css.slice(res.length)), res);
+	constructor(public css: string, public options: any = {}) {
+		this.ctx = this.createParseContext();
+		this.matcher = new Matcher(this.ctx);
 	}
 
-	open() {
-		return this.match(/^{\s*/);
-	}
-
-	close() {
-		return this.match(/^}/);
-	}
-
-	whitespace() {
-		return this.match(/^\s*/);
-	}
-
-	selector() {
-		return this.match(/^([^{]+)/)?.trim();
-		//	.split(/\s*,\s*/);
-	}
-
-	property() {
-		return this.match(/^(\*?[-\w]+)\s*/);
-	}
-
-	value() {
-		return this.match(/^((?:'(?:\\'|.)*?'|"(?:\\"|.)*?"|\([^\)]*?\)|[^};])+)/);
-	}
-
-	declaration() {
-		const property = this.property();
-		if (!property) return;
-
-		//:
-		if (!this.match(/^:\s*/)) return;
-
-		const value = this.value();
-		if (!value) return;
-
-		//;
-		this.match(/^[;\s]*/);
-
-		return { property, value };
-	}
-
-	declarationObj() {
-		if (!this.open()) return;
-
-		const obj = {};
-
-		while (1) {
-			const res = this.declaration();
-			if (!res) break;
-
-			Object.assign(obj, { [res.property]: res.value });
-		}
-
-		if (!this.close()) return;
-
-		return obj;
-	}
-
-	rule() {
-		const selector = this.selector();
-
-		if (!selector) return;
-
+	createParseContext() {
 		return {
-			[selector]: { ...this.declarationObj() },
+			options: this.options,
+			column: 1,
+			line: 1,
+			offset: 0,
+			originalSource: this.css,
+			source: this.css,
 		};
 	}
 
-	comment() {
-		const { css } = this;
+	getPos() {
+		const { column, line, offset } = this.ctx;
 
-		if (css[0] !== "/" && css[1] !== "*") return;
-
-		let i = 2;
-		while (css[i] != undefined && (css[i] !== "*" || css[i + 1] !== "/")) ++i;
-		i += 2;
-
-		this.css = css.slice(i);
+		return { column, line, offset };
 	}
 
-	parse(): ParseResult {
-		this.whitespace();
-		const rules = {};
-		this.comment();
-		while (1) {
-			const rule = this.rule();
+	getLoc(start: Position, end?: Position) {
+		end = end || this.getPos();
 
-			if (!(this.css[0]! == "}" || rule)) {
-				break;
-			}
-			this.comment();
+		return {
+			start,
+			end,
+			source: this.ctx.originalSource.slice(start.offset, end.offset),
+		};
+	}
 
-			Object.assign(rules, rule);
+	parseComment() {
+		const start = this.getPos(),
+			s = this.ctx.source;
+
+		if (s[0] !== '/' || s[1] !== '*') return;
+
+		let i = 2;
+		while (!!s[i] && s[i] !== '*' && s[i + 1] !== '/') ++i;
+		i += 2;
+
+		const content = s.slice(0, i);
+		this.matcher.updatePosition(content);
+		this.matcher.advanceBy(content.length);
+
+		return {
+			type: ParseFlag.COMMENT,
+			content,
+			loc: this.getLoc(start),
+		};
+	}
+
+	parseSelector() {
+		const selectors = this.matcher.selector();
+		if (!selectors) return;
+
+		return selectors.trim().split(/\s*,\s*/);
+	}
+
+	parseDecl() {
+		const start = this.getPos();
+
+		const property = this.matcher.property();
+		if (!property) return;
+
+		const colon = this.matcher.colon();
+		if (!colon) return;
+
+		const value = this.matcher.value();
+		if (!value) return;
+
+		const end = this.getPos();
+		this.matcher.match(/^[;\s]*/);
+
+		return {
+			type: ParseFlag.DECLARATION,
+			loc: this.getLoc(start, end),
+			property,
+			value,
+		};
+	}
+
+	parseDecls() {
+		if (!this.matcher.open()) return;
+
+		this.parseComment();
+
+		const decls: DeclarationNode[] = [];
+
+		let decl;
+		while ((decl = this.parseDecl())) {
+			decls.push(decl);
+			this.parseComment();
 		}
 
-		return rules;
+		if (!this.matcher.close()) return;
+
+		return decls;
+	}
+
+	parseRules() {
+		this.matcher.whitespace();
+
+		const start = this.getPos();
+
+		const selectors = this.parseSelector();
+		if (!selectors) return;
+		const declarations = this.parseDecls();
+
+		const end = this.getPos();
+
+		return { type: ParseFlag.RULES, selectors, declarations, loc: this.getLoc(start, end) };
+	}
+
+	parse() {
+		const nodes: (RuleNode | undefined)[] = [];
+		this.parseComment();
+
+		while (this.ctx.source.length) {
+			const s = this.ctx.source;
+			let node: any = void 0;
+
+			if (s[0] === '@') {
+				if (this.matcher.keyframes()) {
+				}
+			} else {
+				node = this.parseRules();
+			}
+
+			node && nodes.push(node);
+		}
+
+		return nodes;
 	}
 }
