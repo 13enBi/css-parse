@@ -1,0 +1,32 @@
+[
+	{
+		"type": "comment",
+		"comment": "/* 1111111 \n           \n 3          \n2\n1\n\n45\n           */",
+		"loc": {
+			"start": { "column": 12, "line": 2, "offset": 12 },
+			"end": { "column": 14, "line": 9, "offset": 72 },
+			"source": "/* 1111111 \n           \n 3          \n2\n1\n\n45\n           */\n\n"
+		}
+	},
+	{
+		"type": "rules",
+		"selectors": ["a"],
+		"declarations": [
+			{
+				"type": "declaration",
+				"loc": {
+					"start": { "column": 5, "line": 10, "offset": 80 },
+					"end": { "column": 1, "line": 11, "offset": 88 },
+					"source": "color:1\n"
+				},
+				"property": "color",
+				"value": "1"
+			}
+		],
+		"loc": {
+			"start": { "column": 14, "line": 9, "offset": 72 },
+			"end": { "column": 2, "line": 11, "offset": 89 },
+			"source": "a {\n    color:1\n}"
+		}
+	}
+]

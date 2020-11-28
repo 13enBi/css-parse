@@ -156,7 +156,9 @@ const parase = function (css, options) {
 	 */
 
 	function selector() {
-		var m = match(/^([^{]+)/);
+        var m = match(/^([^{]+)/);
+            
+         
 		if (!m) return;
 		return m[0].trim().split(/\s*,\s*/);
 	}

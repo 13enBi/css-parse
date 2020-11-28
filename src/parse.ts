@@ -1,5 +1,5 @@
-import { Matcher } from './match';
-import { DeclarationNode, RuleNode } from './nodeType';
+import Matcher from './matcher';
+import { DeclarationNode } from './nodeType';
 
 export interface Position {
 	offset: number;
@@ -17,6 +17,7 @@ export enum ParseFlag {
 	DECLARATION = 'declaration',
 	COMMENT = 'comment',
 	RULES = 'rules',
+	KEYFRAMES = 'keyframes',
 }
 
 export default class Parse {
@@ -45,9 +46,7 @@ export default class Parse {
 		return { column, line, offset };
 	}
 
-	getLoc(start: Position, end?: Position) {
-		end = end || this.getPos();
-
+	getLoc(start: Position, end: Position = this.getPos()) {
 		return {
 			start,
 			end,
@@ -56,22 +55,13 @@ export default class Parse {
 	}
 
 	parseComment() {
-		const start = this.getPos(),
-			s = this.ctx.source;
-
-		if (s[0] !== '/' || s[1] !== '*') return;
-
-		let i = 2;
-		while (!!s[i] && s[i] !== '*' && s[i + 1] !== '/') ++i;
-		i += 2;
-
-		const content = s.slice(0, i);
-		this.matcher.updatePosition(content);
-		this.matcher.advanceBy(content.length);
+		const start = this.getPos();
+		const comment = this.matcher.comment();
+		if (!comment) return;
 
 		return {
 			type: ParseFlag.COMMENT,
-			content,
+			comment,
 			loc: this.getLoc(start),
 		};
 	}
@@ -138,23 +128,41 @@ export default class Parse {
 		return { type: ParseFlag.RULES, selectors, declarations, loc: this.getLoc(start, end) };
 	}
 
-	parse() {
-		const nodes: (RuleNode | undefined)[] = [];
-		this.parseComment();
+	parseKeyframe() {
+		if (!this.matcher.keyframes()) return;
+		console.log(this.ctx.source);
 
-		while (this.ctx.source.length) {
+		const name = this.parseSelector();
+
+		console.log(name);
+
+		return;
+	}
+
+	parse() {
+		const nodes: any[] = [];
+
+		do {
+			this.matcher.whitespace();
+			const commentNode = this.parseComment();
+
 			const s = this.ctx.source;
 			let node: any = void 0;
 
 			if (s[0] === '@') {
-				if (this.matcher.keyframes()) {
-				}
+				node = this.parseKeyframe();
 			} else {
 				node = this.parseRules();
 			}
 
-			node && nodes.push(node);
-		}
+			if (commentNode) {
+				nodes.push(commentNode);
+			}
+
+			if (node) {
+				nodes.push(node);
+			}
+		} while (this.ctx.source.length);
 
 		return nodes;
 	}

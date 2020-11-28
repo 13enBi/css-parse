@@ -20,3 +20,8 @@ export interface RuleNode extends CssNode {
 	selectors: string[];
 	declarations: DeclarationNode[];
 }
+
+export interface CommentNode extends CssNode {
+	type: ParseFlag.COMMENT;
+	content: string;
+}

@@ -1,6 +1,6 @@
-import { ParserContext } from './parse2';
+import { ParserContext } from './parse';
 
-export class Matcher {
+export default class Matcher {
 	constructor(public ctx: ParserContext) {}
 
 	advanceBy(length: number) {
@@ -35,7 +35,20 @@ export class Matcher {
 	}
 
 	comment() {
-		return this.match(/^(\/\*)/);
+		if (!this.match(/^\/\*/)) return;
+
+		const s = this.ctx.source;
+
+		let i = 0;
+		while (s[i] + s[i + 1] !== '*/') ++i;
+		i += 2;
+
+		const content = s.slice(0, i);
+
+		this.updatePosition(content);
+		this.advanceBy(content.length);
+
+		return content;
 	}
 
 	selector() {
