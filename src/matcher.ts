@@ -12,8 +12,9 @@ export default class Matcher {
 
 		let lines = str.match(/\n/g);
 		if (lines) this.ctx.line += lines.length;
+
 		let i = str.lastIndexOf('\n');
-		this.ctx.column = ~i ? str.length - i : this.ctx.column + str.length;
+		this.ctx.column = i !== -1 ? str.length - i : this.ctx.column + str.length;
 	}
 
 	match(reg: RegExp) {
@@ -69,6 +70,10 @@ export default class Matcher {
 
 	keyframes() {
 		return this.match(/^@([-\w]+)?keyframes */);
+	}
+
+	frames() {
+		return this.match(/^(from|to|\d+%|\.\d+%|\d+\.\d+%)\s*/)?.trim();
 	}
 
 	supports() {

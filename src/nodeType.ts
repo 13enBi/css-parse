@@ -25,3 +25,15 @@ export interface CommentNode extends CssNode {
 	type: ParseFlag.COMMENT;
 	content: string;
 }
+
+export interface FrameNode extends CssNode {
+	type: ParseFlag.FRAME;
+	frame: string;
+	declarations: DeclarationNode[];
+}
+
+export interface KeyframesNode extends CssNode {
+	type: ParseFlag.KEYFRAMES;
+	name: string;
+	frames: FrameNode[];
+}

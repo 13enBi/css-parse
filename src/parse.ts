@@ -18,6 +18,7 @@ export enum ParseFlag {
 	COMMENT = 'comment',
 	RULES = 'rules',
 	KEYFRAMES = 'keyframes',
+	FRAME = 'frame',
 }
 
 export default class Parse {
@@ -55,9 +56,12 @@ export default class Parse {
 	}
 
 	parseComment() {
+		this.matcher.whitespace();
+
 		const start = this.getPos();
 		const comment = this.matcher.comment();
 		if (!comment) return;
+		this.matcher.whitespace();
 
 		return {
 			type: ParseFlag.COMMENT,
@@ -128,23 +132,63 @@ export default class Parse {
 		return { type: ParseFlag.RULES, selectors, declarations, loc: this.getLoc(start, end) };
 	}
 
+	parseFrame() {
+		const start = this.getPos();
+
+		let item;
+		const frame: any[] = [];
+
+		while ((item = this.matcher.frames())) {
+			frame.push(item);
+			this.matcher.match(/^,\s*/);
+		}
+
+		if (!frame.length) return;
+
+		const declarations = this.parseDecls();
+
+		return {
+			type: ParseFlag.FRAME,
+			frame,
+			declarations,
+			loc: this.getLoc(start),
+		};
+	}
+
 	parseKeyframe() {
+		const start = this.getPos();
 		if (!this.matcher.keyframes()) return;
-		console.log(this.ctx.source);
 
-		const name = this.parseSelector();
+		const name = this.parseSelector()?.[0];
+		if (!name) return;
 
-		console.log(name);
+		if (!this.matcher.open()) return;
+		this.parseComment();
 
-		return;
+		let frame;
+		const frames: any[] = [];
+
+		while ((frame = this.parseFrame())) {
+			frames.push(frame);
+			this.parseComment();
+		}
+
+		if (!this.matcher.close()) return;
+
+		return {
+			type: ParseFlag.KEYFRAMES,
+			name,
+			frames,
+			loc: this.getLoc(start),
+		};
 	}
 
 	parse() {
 		const nodes: any[] = [];
 
 		do {
+			this.parseComment();
 			this.matcher.whitespace();
-			const commentNode = this.parseComment();
 
 			const s = this.ctx.source;
 			let node: any = void 0;
@@ -153,10 +197,6 @@ export default class Parse {
 				node = this.parseKeyframe();
 			} else {
 				node = this.parseRules();
-			}
-
-			if (commentNode) {
-				nodes.push(commentNode);
 			}
 
 			if (node) {
