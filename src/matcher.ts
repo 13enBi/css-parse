@@ -1,7 +1,7 @@
-import { ParserContext } from './parse';
+import { ParseContext } from './parse';
 
 export default class Matcher {
-	constructor(public ctx: ParserContext) {}
+	constructor(public ctx: ParseContext) {}
 
 	advanceBy(length: number) {
 		this.ctx.source = this.ctx.source.slice(length);
@@ -55,7 +55,9 @@ export default class Matcher {
 	}
 
 	selector() {
-		return this.match(/^([^{]+)/);
+		return this.match(/^([^{]+)/)
+			?.trim()
+			.split(/\s*,\s*/);
 	}
 
 	property() {
@@ -100,8 +102,13 @@ export default class Matcher {
 		return this.match(/^@media *([^{]+)/)?.trim();
 	}
 
-	/* @import  */
+	/* @import */
 	import() {
 		return this.match(/^@import*([^;\\n]+);/);
+	}
+
+	/* @font-face */
+	fontface() {
+		return this.match(/^@font-face\s*/);
 	}
 }

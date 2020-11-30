@@ -1,5 +1,5 @@
 import Matcher from './matcher';
-import { ParseFlag, DeclarationNode, MediaNode } from './nodeType';
+import { ParseFlag, DeclarationNode, ParseNode } from './nodeType';
 
 export interface Position {
 	offset: number;
@@ -7,29 +7,45 @@ export interface Position {
 	column: number;
 }
 
-export interface ParserContext extends Position {
-	options: any;
+export interface ParseContext extends Position {
 	readonly originalSource: string;
 	source: string;
 }
 
-export default class Parse {
-	ctx: ParserContext;
-	matcher: Matcher;
+export interface ParseOptions {
+	comment: boolean;
+}
 
-	constructor(public css: string, public options: any = {}) {
+export default class Parse {
+	ctx: ParseContext;
+	matcher: Matcher;
+	nodes: ParseNode[] = [];
+
+	constructor(
+		public css: string,
+		public options: ParseOptions = {
+			comment: true,
+		}
+	) {
 		this.ctx = this.createParseContext();
 		this.matcher = new Matcher(this.ctx);
 	}
 
 	createParseContext() {
 		return {
-			options: this.options,
 			column: 1,
 			line: 1,
 			offset: 0,
 			originalSource: this.css,
 			source: this.css,
+		};
+	}
+
+	createRoot() {
+		return {
+			type: ParseFlag.ROOT,
+			source: this.ctx.originalSource,
+			rules: this.nodes,
 		};
 	}
 
@@ -55,18 +71,15 @@ export default class Parse {
 		if (!comment) return;
 		this.matcher.whitespace();
 
-		return {
+		const node: any = {
 			type: ParseFlag.COMMENT,
 			comment,
 			loc: this.getLoc(start),
 		};
-	}
 
-	parseSelector() {
-		const selectors = this.matcher.selector();
-		if (!selectors) return;
+		if (this.options.comment) this.nodes.push(node);
 
-		return selectors.trim().split(/\s*,\s*/);
+		return node;
 	}
 
 	parseDecl() {
@@ -115,7 +128,7 @@ export default class Parse {
 
 		const start = this.getPos();
 
-		const selectors = this.parseSelector();
+		const selectors = this.matcher.selector();
 		if (!selectors) return;
 		const declarations = this.parseDecls();
 
@@ -151,7 +164,7 @@ export default class Parse {
 		const start = this.getPos();
 		if (!this.matcher.keyframes()) return;
 
-		const name = this.parseSelector()?.[0];
+		const name = this.matcher.selector()?.[0];
 		if (!name) return;
 
 		if (!this.matcher.open()) return;
@@ -195,8 +208,6 @@ export default class Parse {
 	}
 
 	parse() {
-		const nodes: any[] = [];
-
 		do {
 			this.parseComment();
 			this.matcher.whitespace();
@@ -210,10 +221,10 @@ export default class Parse {
 			}
 
 			if (node) {
-				nodes.push(node);
+				this.nodes.push(node);
 			}
 		} while (this.ctx.source.length);
 
-		return nodes;
+		return this.createRoot();
 	}
 }

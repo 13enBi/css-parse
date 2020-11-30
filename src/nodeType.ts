@@ -1,4 +1,5 @@
 export enum ParseFlag {
+	ROOT = 'stylesheet',
 	DECLARATION = 'declaration',
 	COMMENT = 'comment',
 	RULES = 'rules',
@@ -16,6 +17,12 @@ export interface Location {
 export interface CssNode {
 	type: ParseFlag;
 	loc: Location;
+}
+
+export interface RootNode extends CssNode {
+	type: ParseFlag.ROOT;
+	rules: RuleNode[];
+	source: string;
 }
 
 export interface DeclarationNode extends CssNode {
@@ -52,3 +59,5 @@ export interface MediaNode extends CssNode {
 	media: string;
 	rules: RuleNode[];
 }
+
+export type ParseNode = RuleNode | KeyframesNode | MediaNode;
