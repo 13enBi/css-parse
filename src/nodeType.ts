@@ -1,12 +1,21 @@
-import { ParseFlag } from './parse';
+export enum ParseFlag {
+	DECLARATION = 'declaration',
+	COMMENT = 'comment',
+	RULES = 'rules',
+	KEYFRAMES = 'keyframes',
+	FRAME = 'frame',
+	MEDIA = 'media',
+}
+
+export interface Location {
+	start: Position;
+	end: Position;
+	source: string;
+}
 
 export interface CssNode {
-	type: string;
-	loc: {
-		start: Position;
-		end: Position;
-		source: string;
-	};
+	type: ParseFlag;
+	loc: Location;
 }
 
 export interface DeclarationNode extends CssNode {
@@ -36,4 +45,10 @@ export interface KeyframesNode extends CssNode {
 	type: ParseFlag.KEYFRAMES;
 	name: string;
 	frames: FrameNode[];
+}
+
+export interface MediaNode extends CssNode {
+	type: ParseFlag.MEDIA;
+	media: string;
+	rules: RuleNode[];
 }

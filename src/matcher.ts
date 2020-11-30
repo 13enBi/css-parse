@@ -23,10 +23,12 @@ export default class Matcher {
 		return res && (this.updatePosition(res), this.advanceBy(res.length), res);
 	}
 
+	/* { */
 	open() {
 		return this.match(/^{\s*/);
 	}
 
+	/* } */
 	close() {
 		return this.match(/^}/);
 	}
@@ -60,18 +62,31 @@ export default class Matcher {
 		return this.match(/^(\*?[-\w]+)\s*/);
 	}
 
+	/* : */
 	colon() {
 		return this.match(/^:\s*/);
+	}
+
+	/* ; */
+	semi() {
+		return this.match(/^[;\s]*/);
+	}
+
+	/* , */
+	comma() {
+		return this.match(/^,\s*/);
 	}
 
 	value() {
 		return this.match(/^((?:'(?:\\'|.)*?'|"(?:\\"|.)*?"|\([^\)]*?\)|[^};])+)/)?.trim();
 	}
 
+	/* @keyframes */
 	keyframes() {
 		return this.match(/^@([-\w]+)?keyframes */);
 	}
 
+	/* from | to | num%  */
 	frames() {
 		return this.match(/^(from|to|\d+%|\.\d+%|\d+\.\d+%)\s*/)?.trim();
 	}
@@ -80,10 +95,12 @@ export default class Matcher {
 		return this.match(/^@supports *([^{]+)/);
 	}
 
+	/* @media */
 	media() {
-		return this.match(/^@media *([^{]+)/);
+		return this.match(/^@media *([^{]+)/)?.trim();
 	}
 
+	/* @import  */
 	import() {
 		return this.match(/^@import*([^;\\n]+);/);
 	}

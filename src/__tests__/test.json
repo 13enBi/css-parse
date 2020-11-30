@@ -1,0 +1,67 @@
+[
+	{
+		"media": "@media (max-width: 600px)",
+		"rules": [
+			{
+				"type": "rules",
+				"selectors": [".context-box .thumb[data-v-ea5de1e2]"],
+				"declarations": [
+					{
+						"type": "declaration",
+						"loc": {
+							"start": { "column": 9, "line": 3, "offset": 79 },
+							"end": { "column": 22, "line": 3, "offset": 92 },
+							"source": "display: none"
+						},
+						"property": "display",
+						"value": "none"
+					}
+				],
+				"loc": {
+					"start": { "column": 5, "line": 2, "offset": 32 },
+					"end": { "column": 6, "line": 4, "offset": 99 },
+					"source": ".context-box .thumb[data-v-ea5de1e2] {\n        display: none;\n    }"
+				}
+			},
+			{
+				"type": "rules",
+				"selectors": [
+					".context-box .info-box .info-row[data-v-ea5de1e2]",
+					".context-box .info-box .info-row .description[data-v-ea5de1e2]"
+				],
+				"declarations": [
+					{
+						"type": "declaration",
+						"loc": {
+							"start": { "column": 9, "line": 7, "offset": 232 },
+							"end": { "column": 25, "line": 7, "offset": 248 },
+							"source": "max-width: 350px"
+						},
+						"property": "max-width",
+						"value": "350px"
+					},
+					{
+						"type": "declaration",
+						"loc": {
+							"start": { "column": 9, "line": 8, "offset": 258 },
+							"end": { "column": 24, "line": 8, "offset": 273 },
+							"source": "max-width: 85vw"
+						},
+						"property": "max-width",
+						"value": "85vw"
+					}
+				],
+				"loc": {
+					"start": { "column": 5, "line": 5, "offset": 104 },
+					"end": { "column": 6, "line": 9, "offset": 280 },
+					"source": ".context-box .info-box .info-row[data-v-ea5de1e2],\n    .context-box .info-box .info-row .description[data-v-ea5de1e2] {\n        max-width: 350px;\n        max-width: 85vw;\n    }"
+				}
+			}
+		],
+		"loc": {
+			"start": { "column": 1, "line": 1, "offset": 0 },
+			"end": { "column": 2, "line": 10, "offset": 282 },
+			"source": "@media (max-width: 600px) {\n    .context-box .thumb[data-v-ea5de1e2] {\n        display: none;\n    }\n    .context-box .info-box .info-row[data-v-ea5de1e2],\n    .context-box .info-box .info-row .description[data-v-ea5de1e2] {\n        max-width: 350px;\n        max-width: 85vw;\n    }\n}"
+		}
+	}
+]

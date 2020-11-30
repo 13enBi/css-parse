@@ -1,5 +1,5 @@
 import Matcher from './matcher';
-import { DeclarationNode } from './nodeType';
+import { ParseFlag, DeclarationNode, MediaNode } from './nodeType';
 
 export interface Position {
 	offset: number;
@@ -11,14 +11,6 @@ export interface ParserContext extends Position {
 	options: any;
 	readonly originalSource: string;
 	source: string;
-}
-
-export enum ParseFlag {
-	DECLARATION = 'declaration',
-	COMMENT = 'comment',
-	RULES = 'rules',
-	KEYFRAMES = 'keyframes',
-	FRAME = 'frame',
 }
 
 export default class Parse {
@@ -90,7 +82,7 @@ export default class Parse {
 		if (!value) return;
 
 		const end = this.getPos();
-		this.matcher.match(/^[;\s]*/);
+		this.matcher.semi();
 
 		return {
 			type: ParseFlag.DECLARATION,
@@ -140,7 +132,7 @@ export default class Parse {
 
 		while ((item = this.matcher.frames())) {
 			frame.push(item);
-			this.matcher.match(/^,\s*/);
+			this.matcher.comma();
 		}
 
 		if (!frame.length) return;
@@ -183,6 +175,25 @@ export default class Parse {
 		};
 	}
 
+	parseMedia() {
+		const start = this.getPos();
+
+		const media = this.matcher.media();
+		if (!this.matcher.open() || !media) return;
+
+		const rules: any[] = [];
+		while (!this.matcher.close()) {
+			rules.push(this.parseRules());
+			this.parseComment();
+		}
+
+		return {
+			media,
+			rules,
+			loc: this.getLoc(start),
+		};
+	}
+
 	parse() {
 		const nodes: any[] = [];
 
@@ -190,11 +201,10 @@ export default class Parse {
 			this.parseComment();
 			this.matcher.whitespace();
 
-			const s = this.ctx.source;
 			let node: any = void 0;
 
-			if (s[0] === '@') {
-				node = this.parseKeyframe();
+			if (this.ctx.source[0] === '@') {
+				node = this.parseKeyframe() || this.parseMedia();
 			} else {
 				node = this.parseRules();
 			}
