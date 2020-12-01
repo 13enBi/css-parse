@@ -1,19 +1,16 @@
 export default `/*-------------------------@ white style---------------------------*/
-.primary-text {/*-------------------------@ white style---------------------------*/
+.primary-text {
 	color: #e93030;
 }
-.primary-bg {/*-------------------------@ white style---------------------------*/
+.primary-bg {
 	background-color: #e93030;
 }
 .primary-bd {
-	border-color: #e93030;/*-------------------------@ white style---------------------------*/
+	border-color: #e93030;
 }
 .primary-text-disabled {
 	color: #f8c0c0;
-
-	/*-------------------------@ white style---------------------------*/
 }
-/*-------------------------@ white style---------------------------*/
 .primary-bg-disabled {
 	background-color: #f8c0c0;
 }
@@ -317,4 +314,4 @@ export default `/*-------------------------@ white style------------------------
 [theme-mode='black'][theme-mode='gphone'] .other-bg-primarycard {
 	background-color: #1e1e1e;
 }
-`
+`;

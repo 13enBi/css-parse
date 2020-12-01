@@ -1,15 +1,7 @@
-// import { ParseResult } from "./parse";
+import { ParseFlag, RootNode } from './nodeType';
 
-// const stringify = (val: ParseResult) =>
-// 	Object.entries(val).reduce(
-// 		(str, [selector, declarations]) =>
-// 			(str += `${selector} {\n    ${Object.entries(declarations).reduce(
-// 				(decl, [prop, value]) => (decl += `${prop}:${value};\n`),
-// 				""
-// 			)}}\n`),
-// 		""
-// 	);
-
-// export default stringify;
-
-export default () => {};
+export default class Stringify {
+	[ParseFlag.ROOT](node: RootNode) {
+		return node?.source;
+	}
+}

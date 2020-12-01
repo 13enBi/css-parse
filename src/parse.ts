@@ -73,7 +73,7 @@ export default class Parse {
 
 		const node: any = {
 			type: ParseFlag.COMMENT,
-			comment,
+			[ParseFlag.COMMENT]: comment,
 			loc: this.getLoc(start),
 		};
 
@@ -154,7 +154,7 @@ export default class Parse {
 
 		return {
 			type: ParseFlag.FRAME,
-			frame,
+			[ParseFlag.FRAME]: frame,
 			declarations,
 			loc: this.getLoc(start),
 		};
@@ -182,17 +182,18 @@ export default class Parse {
 
 		return {
 			type: ParseFlag.KEYFRAMES,
-			name,
+			[ParseFlag.KEYFRAMES]: name,
 			frames,
 			loc: this.getLoc(start),
 		};
 	}
 
-	parseMedia() {
+	_atParse(type: ParseFlag, matcher: () => string | undefined) {
 		const start = this.getPos();
 
-		const media = this.matcher.media();
-		if (!this.matcher.open() || !media) return;
+		const res = matcher();
+		if (!this.matcher.open() || !res) return;
+		this.parseComment();
 
 		const rules: any[] = [];
 		while (!this.matcher.close()) {
@@ -201,10 +202,61 @@ export default class Parse {
 		}
 
 		return {
-			media,
+			type,
+			[type]: res,
 			rules,
 			loc: this.getLoc(start),
 		};
+	}
+
+	parseMedia() {
+		return this._atParse(ParseFlag.MEDIA, () => this.matcher.media() /* this */);
+	}
+
+	parseSupports() {
+		return this._atParse(ParseFlag.SUPPORTS, () => this.matcher.supports());
+	}
+
+	parseImport() {
+		const start = this.getPos();
+
+		const imp = this.matcher.import();
+		if (!imp) return;
+
+		const url = this.matcher.url(imp);
+		if (!url) return;
+
+		return {
+			type: ParseFlag.IMPORT,
+			[ParseFlag.IMPORT]: imp,
+			url,
+			loc: this.getLoc(start),
+		};
+	}
+
+	parseFontface() {
+		const start = this.getPos();
+
+		if (!this.matcher.fontface()) return;
+		const fontface = this.parseDecls();
+		const fontFamily = fontface?.find((node) => node.property === 'font-family')?.value;
+
+		return {
+			type: ParseFlag.FONTFACE,
+			fontFamily,
+			[ParseFlag.FONTFACE]: fontface,
+			loc: this.getLoc(start),
+		};
+	}
+
+	at() {
+		return (
+			this.parseKeyframe() ||
+			this.parseMedia() ||
+			this.parseSupports() ||
+			this.parseImport() ||
+			this.parseFontface()
+		);
 	}
 
 	parse() {
@@ -215,7 +267,7 @@ export default class Parse {
 			let node: any = void 0;
 
 			if (this.ctx.source[0] === '@') {
-				node = this.parseKeyframe() || this.parseMedia();
+				node = this.at();
 			} else {
 				node = this.parseRules();
 			}

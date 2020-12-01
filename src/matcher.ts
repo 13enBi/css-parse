@@ -88,13 +88,14 @@ export default class Matcher {
 		return this.match(/^@([-\w]+)?keyframes */);
 	}
 
-	/* from | to | num%  */
+	/* from | to | num%(,num%)  */
 	frames() {
 		return this.match(/^(from|to|\d+%|\.\d+%|\d+\.\d+%)\s*/)?.trim();
 	}
 
+	/* @supports */
 	supports() {
-		return this.match(/^@supports *([^{]+)/);
+		return this.match(/^@supports *([^{]+)/)?.trim();
 	}
 
 	/* @media */
@@ -104,7 +105,12 @@ export default class Matcher {
 
 	/* @import */
 	import() {
-		return this.match(/^@import*([^;\\n]+);/);
+		return this.match(/^@import *([^;\n]+);/);
+	}
+
+	/* "//xxxx/xxx" or url("//xxx/xxx") to //xxx/xxx  */
+	url(imp: string) {
+		return imp.match(/(?<=(url\()?"|')\S*?(?="|'\)?)/)?.[0].trim();
 	}
 
 	/* @font-face */

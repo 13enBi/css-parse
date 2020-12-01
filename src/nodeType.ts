@@ -6,6 +6,9 @@ export enum ParseFlag {
 	KEYFRAMES = 'keyframes',
 	FRAME = 'frame',
 	MEDIA = 'media',
+	SUPPORTS = 'supports',
+	IMPORT = 'import',
+	FONTFACE = 'fontface',
 }
 
 export interface Location {
@@ -39,25 +42,42 @@ export interface RuleNode extends CssNode {
 
 export interface CommentNode extends CssNode {
 	type: ParseFlag.COMMENT;
-	content: string;
+	[ParseFlag.COMMENT]: string;
 }
 
 export interface FrameNode extends CssNode {
 	type: ParseFlag.FRAME;
-	frame: string;
+	[ParseFlag.FRAME]: string;
 	declarations: DeclarationNode[];
 }
 
 export interface KeyframesNode extends CssNode {
 	type: ParseFlag.KEYFRAMES;
-	name: string;
+	[ParseFlag.KEYFRAMES]: string;
 	frames: FrameNode[];
 }
 
 export interface MediaNode extends CssNode {
 	type: ParseFlag.MEDIA;
-	media: string;
+	[ParseFlag.MEDIA]: string;
 	rules: RuleNode[];
 }
 
-export type ParseNode = RuleNode | KeyframesNode | MediaNode;
+export interface SupportsNode extends CssNode {
+	type: ParseFlag.SUPPORTS;
+	[ParseFlag.SUPPORTS]: string;
+	rules: RuleNode[];
+}
+
+export interface ImportNode extends CssNode {
+	type: ParseFlag.IMPORT;
+	[ParseFlag.IMPORT]: string;
+}
+
+export interface FontfaceNode extends CssNode {
+	type: ParseFlag.FONTFACE;
+	fontFamily: string;
+	[ParseFlag.FONTFACE]: DeclarationNode[];
+}
+
+export type ParseNode = RuleNode | KeyframesNode | MediaNode | SupportsNode | FontfaceNode;
