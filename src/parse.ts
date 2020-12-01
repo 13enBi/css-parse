@@ -1,5 +1,5 @@
 import Matcher from './matcher';
-import { ParseFlag, DeclarationNode, ParseNode } from './nodeType';
+import { ParseFlag, DeclarationNode, ParseNode, RootNode } from './nodeType';
 
 export interface Position {
 	offset: number;
@@ -41,7 +41,7 @@ export default class Parse {
 		};
 	}
 
-	createRoot() {
+	createRoot(): RootNode {
 		return {
 			type: ParseFlag.ROOT,
 			source: this.ctx.originalSource,
@@ -249,7 +249,7 @@ export default class Parse {
 		};
 	}
 
-	at() {
+	_at() {
 		return (
 			this.parseKeyframe() ||
 			this.parseMedia() ||
@@ -267,7 +267,7 @@ export default class Parse {
 			let node: any = void 0;
 
 			if (this.ctx.source[0] === '@') {
-				node = this.at();
+				node = this._at();
 			} else {
 				node = this.parseRules();
 			}

@@ -22,9 +22,9 @@ export interface CssNode {
 	loc: Location;
 }
 
-export interface RootNode extends CssNode {
+export interface RootNode extends Omit<CssNode, 'loc'> {
 	type: ParseFlag.ROOT;
-	rules: RuleNode[];
+	rules: ParseNode[];
 	source: string;
 }
 
