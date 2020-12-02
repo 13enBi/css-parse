@@ -14,6 +14,7 @@ export interface ParseContext extends Position {
 
 export interface ParseOptions {
 	comment: boolean;
+	source: boolean;
 }
 
 export default class Parse {
@@ -22,29 +23,30 @@ export default class Parse {
 	nodes: ParseNode[] = [];
 
 	constructor(
-		public css: string,
+		css: string,
 		public options: ParseOptions = {
 			comment: true,
+			source: false,
 		}
 	) {
-		this.ctx = this.createParseContext();
+		this.ctx = this.createParseContext(css);
 		this.matcher = new Matcher(this.ctx);
 	}
 
-	createParseContext() {
+	createParseContext(css: string) {
 		return {
 			column: 1,
 			line: 1,
 			offset: 0,
-			originalSource: this.css,
-			source: this.css,
+			originalSource: css,
+			source: css,
 		};
 	}
 
 	createRoot(): RootNode {
 		return {
 			type: ParseFlag.ROOT,
-			source: this.ctx.originalSource,
+			source: this.options.source ? this.ctx.originalSource : void 0,
 			rules: this.nodes,
 		};
 	}
@@ -63,23 +65,27 @@ export default class Parse {
 		};
 	}
 
-	parseComment() {
+	parseComments() {
 		this.matcher.whitespace();
 
-		const start = this.getPos();
-		const comment = this.matcher.comment();
-		if (!comment) return;
-		this.matcher.whitespace();
+		const comments: any[] = [];
 
-		const node: any = {
-			type: ParseFlag.COMMENT,
-			[ParseFlag.COMMENT]: comment,
-			loc: this.getLoc(start),
-		};
+		let comment;
+		let start = this.getPos();
 
-		if (this.options.comment) this.nodes.push(node);
+		while ((comment = this.matcher.comment())) {
+			this.matcher.whitespace();
 
-		return node;
+			const node = {
+				type: ParseFlag.COMMENT,
+				[ParseFlag.COMMENT]: comment,
+				loc: this.getLoc(start),
+			};
+			start = this.getPos();
+			comments.push(node);
+		}
+
+		if (this.options.comment) this.nodes.push(...comments);
 	}
 
 	parseDecl() {
@@ -108,14 +114,14 @@ export default class Parse {
 	parseDecls() {
 		if (!this.matcher.open()) return;
 
-		this.parseComment();
+		this.parseComments();
 
 		const decls: DeclarationNode[] = [];
 
 		let decl;
 		while ((decl = this.parseDecl())) {
 			decls.push(decl);
-			this.parseComment();
+			this.parseComments();
 		}
 
 		if (!this.matcher.close()) return;
@@ -168,14 +174,14 @@ export default class Parse {
 		if (!name) return;
 
 		if (!this.matcher.open()) return;
-		this.parseComment();
+		this.parseComments();
 
 		let frame;
 		const frames: any[] = [];
 
 		while ((frame = this.parseFrame())) {
 			frames.push(frame);
-			this.parseComment();
+			this.parseComments();
 		}
 
 		if (!this.matcher.close()) return;
@@ -193,12 +199,12 @@ export default class Parse {
 
 		const res = matcher();
 		if (!this.matcher.open() || !res) return;
-		this.parseComment();
+		this.parseComments();
 
 		const rules: any[] = [];
 		while (!this.matcher.close()) {
 			rules.push(this.parseRules());
-			this.parseComment();
+			this.parseComments();
 		}
 
 		return {
@@ -261,7 +267,7 @@ export default class Parse {
 
 	parse() {
 		do {
-			this.parseComment();
+			this.parseComments();
 			this.matcher.whitespace();
 
 			let node: any = void 0;

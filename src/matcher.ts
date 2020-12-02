@@ -38,11 +38,11 @@ export default class Matcher {
 	}
 
 	comment() {
-		if (!this.match(/^\/\*/)) return;
-
 		const s = this.ctx.source;
 
-		let i = 0;
+		if (s[0] + s[1] !== '/*') return;
+
+		let i = 2;
 		while (s[i] + s[i + 1] !== '*/') ++i;
 		i += 2;
 

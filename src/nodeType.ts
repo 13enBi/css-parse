@@ -1,3 +1,5 @@
+import { Position } from './parse';
+
 export enum ParseFlag {
 	ROOT = 'stylesheet',
 	DECLARATION = 'declaration',
@@ -25,7 +27,7 @@ export interface CssNode {
 export interface RootNode extends Omit<CssNode, 'loc'> {
 	type: ParseFlag.ROOT;
 	rules: ParseNode[];
-	source: string;
+	source?: string;
 }
 
 export interface DeclarationNode extends CssNode {
@@ -47,7 +49,7 @@ export interface CommentNode extends CssNode {
 
 export interface FrameNode extends CssNode {
 	type: ParseFlag.FRAME;
-	[ParseFlag.FRAME]: string;
+	[ParseFlag.FRAME]: string[];
 	declarations: DeclarationNode[];
 }
 
