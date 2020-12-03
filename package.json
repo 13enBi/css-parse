@@ -1,6 +1,6 @@
 {
 	"name": "@13enbi/css-parse",
-	"version": "0.0.1-beta.1",
+	"version": "0.0.1-beta.3",
 	"description": "css-parse",
 	"main": "lib/index.js",
 	"module": "esm/index.js",
@@ -13,6 +13,10 @@
 		"build": "yarn clean && yarn build:cjs && yarn build:es",
 		"clean": "rimraf lib esm"
 	},
+	"files": [
+		"lib/",
+		"esm/"
+	],
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/13enBi/css-parse.git"
