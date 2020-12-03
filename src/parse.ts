@@ -17,7 +17,7 @@ export interface ParseOptions {
 	source: boolean;
 }
 
-export default class Parse {
+export class Parse {
 	ctx: ParseContext;
 	matcher: Matcher;
 	nodes: ParseNode[] = [];
@@ -286,3 +286,5 @@ export default class Parse {
 		return this.createRoot();
 	}
 }
+
+export default (css: string, options?: ParseOptions) => new Parse(css, options).parse();

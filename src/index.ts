@@ -1,6 +1,9 @@
-import Parse from './parse';
-export { default as stringify } from './stringify';
-export const parse = (css: string) => new Parse(css).parse();
+import parse from './parse';
+import stringify from './stringify';
+
+export { parse, stringify };
+export default { parse, stringify };
 
 export * from './parse';
+export * from './stringify';
 export * from './nodeType';

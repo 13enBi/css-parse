@@ -3,3 +3,4 @@ lib/
 esm/
 coverage/
 yarn.lock
+**/__tests__

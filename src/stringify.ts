@@ -16,7 +16,16 @@ const TABSIZE = '	';
 const OPEN = ' {\n';
 const CLOSE = '}\n\n';
 
-export default class Stringify {
+export interface StringifyOptions {
+	comment: boolean;
+}
+
+export class Stringify {
+	constructor(
+		public readonly root: RootNode,
+		public options: StringifyOptions = { comment: false }
+	) {}
+
 	indent(size = 1) {
 		return Array(size).fill(TABSIZE).join('');
 	}
@@ -77,11 +86,14 @@ export default class Stringify {
 		return '@font-face' + OPEN + decls + CLOSE;
 	}
 
-	[ParseFlag.COMMENT](node: CommentNode) {
-		return node[ParseFlag.COMMENT] + '\n';
-	}
+	[ParseFlag.COMMENT] = this.options.comment
+		? (node: CommentNode) => node[ParseFlag.COMMENT] + '\n'
+		: () => '';
 
-	stringify(root: RootNode) {
-		return root.rules.reduce((s, node) => (s += this._map(node) || ''), '');
+	stringify() {
+		return this.root.rules.reduce((s, node) => (s += this._map(node) || ''), '');
 	}
 }
+
+export default (root: RootNode, options?: StringifyOptions) =>
+	new Stringify(root, options).stringify();
